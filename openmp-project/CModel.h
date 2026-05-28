@@ -15,10 +15,13 @@ public:
 	void add_layer(Layer* layer) {
 		// (구현할 것)
 		// 동작: layer 객체를 layers vector의 마지막 element로 저장
+		layers.push_back(layer);
 	}
 	~Model() {
 		// (구현할 것)
 		// 동작: layers와 tensors의 모든 element를 동적할당 해제
+		for (auto l : layers) delete l;
+		for (auto t : tensors) delete t;
 	}
 
 	// =========================================================================
@@ -47,6 +50,10 @@ public:
 		// 동작2: tensors의 i번째 tensor를 layers의 i번째 layer의 forward 함수 입력으로 넣고,
 		//        그 결과를 tensors의 (i+1)번째 tensor로 저장
 		// 동작3: 결과적으로 tensors의 가장 마지막 tensor가 CNN의 최종 출력값이 됨
+		for (int i = 0; i < (int)layers.size(); i++) {
+    		Tensor3D* output = layers[i]->forward(tensors[i]);
+    		tensors.push_back(output);
+		}
 		cout << "Super-resolution is complete..." << endl;
 
 		// (3) CNN의 출력(마지막 tensor)을 2차원 배열로 변환 후 U, V 채널과 함께 이미지로 저장
