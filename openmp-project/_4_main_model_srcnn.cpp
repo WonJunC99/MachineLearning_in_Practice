@@ -15,7 +15,8 @@ int main() {
 	model.add_layer(new Layer_Conv("Conv3", 5, 32, 1, LOAD_INIT, "model/weights_conv3_5x5x32x1.txt", "model/biases_conv3_1.txt"));
 
 
-	model.test("baby_512x512_input.bmp", "baby_512x512_output_srcnn.bmp");
+	model.test("baby_512x512_input.bmp", "baby_512x512_output_srcnn_test.bmp");
+	//"baby_512x512_output_srcnn_test.bmp"..etc
 
 	model.print_layer_info();
 	model.print_tensor_info();
