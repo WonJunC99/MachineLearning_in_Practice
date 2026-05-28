@@ -12,6 +12,7 @@
 class Layer
 {
 protected:
+	//f는 보통 "filter" 의미
 	int fK;		// kernel size in K*K kernel
 	int fC_in;	// number of input channels
 	int fC_out; // number of filters (output channels)
@@ -47,7 +48,6 @@ public:
 	}
 	Tensor3D *forward(const Tensor3D *input) override
 	{
-		//일단 여기까지
 		// (구현할 것)
 		// 동작1: input tensor에 대해 각 element x가 양수이면 그대로 전달, 음수이면 0으로 output tensor에 전달
 		// 동작2: output tensor는 동적할당하여 주소값을 반환
@@ -56,13 +56,13 @@ public:
 		// 함수:  Tensor3D의 get_info(), get_elem(), set_elem()을 적절히 활용할 것
 		// [OpenMP] clock()으로 병렬처리 전/후 처리속도를 측정하고, #pragma omp parallel for를
 		//          적용하여 루프를 병렬처리 할 것 (적절한 루프에 적용할 것)
-		int nH, nW, nC;
-		input->get_info(nH, nW, nC);
+		int nH, nW, nC; // 입력 텐서 크기 저장할 변수 선언
+		input->get_info(nH, nW, nC);// pass by reference로 크기 읽어오기
 
-		Tensor3D *output = new Tensor3D(nH, nW, nC);
+		Tensor3D *output = new Tensor3D(nH, nW, nC); // 출력 텐서 동적 할당
 
 		clock_t start = clock();
-#pragma omp parallel for collapse(3)
+		#pragma omp parallel for collapse(3)
 		for (int h = 0; h < nH; h++)
 			for (int w = 0; w < nW; w++)
 				for (int c = 0; c < nC; c++)
@@ -76,6 +76,7 @@ public:
 		if (cached_output != nullptr)
 			delete cached_output;
 		cached_output = new Tensor3D(nH, nW, nC);
+		#pragma omp parallel for collapse(3)
 		for (int h = 0; h < nH; h++)
 			for (int w = 0; w < nW; w++)
 				for (int c = 0; c < nC; c++)
@@ -84,8 +85,10 @@ public:
 		cout << name << " is finished" << endl;
 		return output;
 	}
+	
 	Tensor3D *backward(const Tensor3D *grad_output) override
 	{
+		//다른 데서 쓰는 거 봐야 더 이해될 듯
 		// (구현할 것)
 		// 동작: ReLU backward - forward에서 출력이 양수였던 위치만 gradient를 통과시킴
 		// 수식: dL/dX[h][w][c] = grad_output[h][w][c]  if cached_output[h][w][c] > 0
@@ -97,14 +100,12 @@ public:
 
 		Tensor3D *grad_input = new Tensor3D(nH, nW, nC);
 
-#pragma omp parallel for collapse(3)
+		#pragma omp parallel for collapse(3)
 		for (int h = 0; h < nH; h++)
 			for (int w = 0; w < nW; w++)
 				for (int c = 0; c < nC; c++)
 				{
-					double val = cached_output->get_elem(h, w, c) > 0.0
-									 ? grad_output->get_elem(h, w, c)
-									 : 0.0;
+					double val = cached_output->get_elem(h, w, c) > 0.0 ? grad_output->get_elem(h, w, c) : 0.0;
 					grad_input->set_elem(h, w, c, val);
 				}
 
@@ -123,7 +124,7 @@ public:
 	{
 		// (구현할 것)
 		// 동작: layer 이름 및 크기 정보를 화면에 출력
-		cout << name << " ReLU " << fK << "*" << fC_in << "*" << fC_out << endl;
+		cout << name << " " << fK << "*" << fK << "*" << fC_in << "*" << fC_out << endl;
 	}
 };
 
@@ -150,13 +151,14 @@ public:
 		// 동작3: new double[fK*fK*fC_in*fC_out]()와 new double[fC_out]()를 사용하여
 		//        weight_tensor, bias_tensor, grad_weight_tensor, grad_bias_tensor를 동적 할당할 것
 		//        (끝의 ()는 0으로 초기화, weight 인덱스 = ((ph*fK+pw)*fC_in+ci)*fC_out+co)
+		//		ph : patch heigt, pw : patch width, ci : channel in, co : channel out
 		// 동작4: init() 함수를 호출하여 가중치를 초기화 할 것
 		weight_tensor = new double[fK * fK * fC_in * fC_out]();
 		bias_tensor = new double[fC_out]();
 		grad_weight_tensor = new double[fK * fK * fC_in * fC_out]();
 		grad_bias_tensor = new double[fC_out]();
 
-		init(init_type);
+		init(init_type); //가중치 초기화
 	}
 	void init(int init_type)
 	{
@@ -179,13 +181,14 @@ public:
 			ifstream fw(filename_weight);
 			ifstream fb(filename_bias);
 			// 파일 순서: 필터(co) → 채널(ci) → 행(ph) → 열(pw)
+			//		ph : patch heigt, pw : patch width, ci : channel in, co : channel out
 			for (int co = 0; co < fC_out; co++)
 				for (int ci = 0; ci < fC_in; ci++)
 					for (int ph = 0; ph < fK; ph++)
 						for (int pw = 0; pw < fK; pw++)
 						{
 							double v;
-							fw >> v;
+							fw >> v; //파일 값 읽기
 							weight_tensor[((ph * fK + pw) * fC_in + ci) * fC_out + co] = v;
 						}
 			for (int co = 0; co < fC_out; co++)
@@ -353,6 +356,6 @@ public:
 	{
 		// (구현할 것)
 		// 동작: Layer_ReLU와 동일
-		cout << name << " Conv " << fK << "*" << fC_in << "*" << fC_out << endl;
+		cout << name << " " << fK << "*" << fK << "*" << fC_in << "*" << fC_out << endl;
 	}
 };
