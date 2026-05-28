@@ -134,7 +134,7 @@ public:
 
 		double t0 = omp_get_wtime();
 
-		//(a) forward pass
+		// (a) forward pass
 		// (구현할 것): (a) forward pass
 		// tensors[i] -> layers[i]->forward() -> tensors[i+1] 순서로 수행
 		while (tensors.size() > 1) { delete tensors.back(); tensors.pop_back(); }
