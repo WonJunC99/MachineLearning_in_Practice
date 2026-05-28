@@ -228,7 +228,7 @@ public:
 		Tensor3D *output = new Tensor3D(nH, nW, fC_out);
 
 		clock_t start = clock();
-#pragma omp parallel for collapse(2)
+		#pragma omp parallel for collapse(2)
 		for (int h = offset; h < nH - offset; h++)
 		{
 			for (int w = offset; w < nW - offset; w++)
@@ -290,7 +290,7 @@ public:
 		memset(grad_bias_tensor, 0, sizeof(double) * fC_out);
 		double *grad_input_flat = new double[nH_in * nW_in * nC_in]();
 
-#pragma omp parallel for collapse(2)
+		#pragma omp parallel for collapse(2)
 		for (int h = offset; h < nH - offset; h++)
 		{
 			for (int w = offset; w < nW - offset; w++)
@@ -299,7 +299,7 @@ public:
 				{
 					double go = grad_output->get_elem(h, w, co);
 
-#pragma omp atomic
+					#pragma omp atomic
 					grad_bias_tensor[co] += go;
 
 					for (int ph = 0; ph < fK; ph++)
@@ -310,9 +310,9 @@ public:
 							for (int ci = 0; ci < fC_in; ci++)
 							{
 								int widx = ((ph * fK + pw) * fC_in + ci) * fC_out + co;
-#pragma omp atomic
+								#pragma omp atomic
 								grad_weight_tensor[widx] += go * cached_input->get_elem(ih, iw, ci);
-#pragma omp atomic
+								#pragma omp atomic
 								grad_input_flat[ih * nW_in * nC_in + iw * nC_in + ci] += go * weight_tensor[widx];
 							}
 						}
@@ -337,13 +337,13 @@ public:
 		//       b  = b  - lr * grad_bias_tensor
 		// [OpenMP] #pragma omp parallel for를 적용하여 병렬처리 할 것
 		    int total = fK * fK * fC_in * fC_out;
-    #pragma omp parallel for
-    for (int i = 0; i < total; i++)
-        weight_tensor[i] -= lr * grad_weight_tensor[i];
+    		#pragma omp parallel for
+    		for (int i = 0; i < total; i++)
+        		weight_tensor[i] -= lr * grad_weight_tensor[i];
 
-    #pragma omp parallel for
-    for (int i = 0; i < fC_out; i++)
-        bias_tensor[i] -= lr * grad_bias_tensor[i];
+    		#pragma omp parallel for
+    		for (int i = 0; i < fC_out; i++)
+        		bias_tensor[i] -= lr * grad_bias_tensor[i];
 
 	}
 	void get_info(string &_name, int &_fK, int &_fC_in, int &_fC_out) const override
