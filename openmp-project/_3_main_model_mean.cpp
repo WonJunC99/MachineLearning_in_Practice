@@ -16,6 +16,7 @@ int main() {
 
 
 	model.test("baby_512x512_input.bmp", "baby_512x512_output_mean.bmp");
+	//"baby_512x512_output_mean_temp.bmp"...etc
 
 	model.print_layer_info();
 	model.print_tensor_info();
