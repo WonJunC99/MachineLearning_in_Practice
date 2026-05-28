@@ -16,6 +16,8 @@ public:
 		//       끝의 ()는 모든 element를 0으로 초기화함
 		tensor = dmatrix1D(nH * nW * nC);
 		memset(tensor, 0, sizeof(double) * nH * nW * nC);
+		//memset(대상, 채울 값, 채울 바이트 수), tensor 배열의 메모리를 전부 0으로 채움
+		//dmatrix1D는 new double[nH * nW * nC]()가 아님, 괄호 없음, 따라서 memset을 통해 0으로 초기화
 	}
 	~Tensor3D() {
 		// (구현할 것)
