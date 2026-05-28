@@ -71,7 +71,7 @@ public:
 					output->set_elem(h, w, c, val > 0.0 ? val : 0.0);
 				}
 		clock_t end = clock();
-		cout << name << " forward time: " << (double)(end - start) / CLOCKS_PER_SEC << "s" << endl;
+		cout << "Processing time: " << (double)(end - start) / CLOCKS_PER_SEC << "s" << endl;
 
 		if (cached_output != nullptr)
 			delete cached_output;
@@ -245,7 +245,7 @@ public:
 			}
 		}
 		clock_t end = clock();
-		cout << name << " forward time: " << (double)(end - start) / CLOCKS_PER_SEC << "s" << endl;
+		cout << "Processing time: " << (double)(end - start) / CLOCKS_PER_SEC << "s" << endl;
 
 		if (cached_input != nullptr)
 			delete cached_input;
