@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/choiwonjun/Downloads/project7_v3/_3_main_model_mean'
+relocations:     []
+...

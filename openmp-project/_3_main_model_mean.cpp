@@ -15,8 +15,8 @@ int main() {
 	model.add_layer(new Layer_Conv("Conv3", 3, 1, 1, MEAN_INIT));
 
 
-	model.test("baby_512x512_input.bmp", "baby_512x512_output_mean.bmp");
-	//"baby_512x512_output_mean_temp.bmp"...etc
+	model.test("baby_512x512_input.bmp", "baby_512x512_output_mean_main3_submit.bmp");
+	//"baby_512x512_output_mean_temp.bmp", "baby_512x512_output_mean_main3_submit.bmp"...etc
 
 	model.print_layer_info();
 	model.print_tensor_info();

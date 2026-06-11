@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/choiwonjun/Downloads/project7_v3/_4_main_model_srcnn'
+relocations:     []
+...

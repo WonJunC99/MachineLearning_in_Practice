@@ -56,7 +56,8 @@ int main() {
 		model->train("baby_512x512_input.bmp", "baby_512x512_output_srcnn.bmp", 0.0001, 1);
 		double t_n = omp_get_wtime() - t_start;
 		cout << "Threads:  4 | Time: " << t_n << "s | Speedup: " << t_serial / t_n << "x" << endl;
-		model->test("baby_512x512_input.bmp", "baby_512x512_output_backprop.bmp");
+		model->test("baby_512x512_input.bmp", "baby_512x512_output_backprop_main5_submit.bmp");
+		//"baby_512x512_output_backprop_main5_submit.bmp"..etc
 		model->print_layer_info();
 		model->print_tensor_info();
 		delete model;
