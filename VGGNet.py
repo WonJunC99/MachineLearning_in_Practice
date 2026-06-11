@@ -8,12 +8,40 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 num_epochs = 10
 learning_rate = 0.001
 
+# ============================================================
+# 데이터 정규화(Normalization) — 식 (5.9)
+#   x_new = (x_old - μ) / σ        (채널별로 독립 적용, i.i.d. 가정)
+#
+# - μ, σ : 학습 데이터 전체에서 구한 채널별 평균/표준편차
+#          R채널 → (x_R - μR) / σR
+#          G채널 → (x_G - μG) / σG
+#          B채널 → (x_B - μB) / σB
+# - 효과 : 평균 0, 표준편차 1로 변환 → 규모(scale) 문제와
+#          양수 편향 문제를 해결, 학습 안정화
+# - 주의 : 테스트셋도 "학습셋에서 구한" 같은 μ, σ로 정규화
+#          Normalize는 텐서에만 동작 → 반드시 ToTensor() 뒤에 적용
+# ============================================================
+# CIFAR-10 학습셋의 채널별 평균/표준편차 계산 (ToTensor만 적용한 상태에서)
+tmp = torchvision.datasets.CIFAR10(root='../../data', train=True,
+                                   transform=transforms.ToTensor(), download=True)
+imgs = torch.stack([img for img, _ in tmp])      # [50000, 3, 32, 32]
+mean = imgs.mean(dim=[0, 2, 3])                   # R,G,B 채널별 평균 → μR, μG, μB
+std  = imgs.std(dim=[0, 2, 3])                    # R,G,B 채널별 표준편차 → σR, σG, σB
+print(mean, std)   # 대략 mean=[0.4914, 0.4822, 0.4465], std=[0.2470, 0.2435, 0.2616]
+
 transform = transforms.Compose([
     transforms.Pad(4),
     transforms.RandomHorizontalFlip(),
     transforms.RandomCrop(32), # crop 후 image size = 32x32
-    transforms.ToTensor()
+    transforms.ToTensor(),
+    transforms.Normalize(mean, std)     # ← (x - μ) / σ, 채널별 독립 적용
   ])
+
+""" 주의
+채널별 μ/σ 계산 코드는 transform = transforms.Compose([...]) 정의하기 바로 전에 넣으세요 (mean, std 변수가 먼저 있어야 Compose에서 쓸 수 있음).
+Normalize는 기존 transform의 ToTensor() 다음 줄에 추가. 순서 중요해요 — Normalize는 텐서에만 동작하니 반드시 ToTensor 뒤라야 합니다.
+그리고 test_dataset도 똑같이 정규화해야 해요. 지금 transform=transforms.ToTensor()로 돼 있는데, 학습셋에서 구한 같은 mean, std로 바꿔주세요:
+"""
 
 # CIFAR-10 dataset
 # ============================================================
@@ -44,8 +72,12 @@ train_dataset = torchvision.datasets.CIFAR10(root = '../../data',
 
 test_dataset = torchvision.datasets.CIFAR10(root = '../../data',
                                             train = False,
-                                            transform = transforms.ToTensor())
+                                            transform = transforms.Compose([
+                                                transforms.ToTensor(),
+                                                transforms.Normalize(mean, std) # 학습셋 통계 그대로 사용 (테스트셋으로 다시 구하지 않음)
+                                            ]))
 
+                                            
 # Data loader
 train_loader = torch.utils.data.DataLoader(dataset = train_dataset,
                                            batch_size = 100,
